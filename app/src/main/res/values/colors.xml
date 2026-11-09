@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="base_background">#FFEADB</color>
+    <color name="pink_background">#eed5d0</color>
+    <color name="theme_green">#676f3c</color>
+    <color name="theme_blue">#004074</color>
+    <color name="theme_brown">#b7472a</color>
+    <color name="theme_orange">#f1935c</color>
+    <color name="theme_red_orange">#ba6b57</color>
+    <color name="transparent">#00000000</color>
+    <color name="theme_gold">#DEA057</color>
+    <color name="theme_light_blue">#7695FF</color>
+    <color name="theme_coral">#f5a1b0</color>
+    <color name="theme_yellow">#FDDE55</color>
+    <color name="theme_olive">#6b8e23</color>
+    <color name="bounding_box_color">#780606</color>
+    <color name="theme_skin">#fac0a7</color>
+</resources>

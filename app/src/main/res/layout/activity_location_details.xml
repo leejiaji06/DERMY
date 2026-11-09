@@ -1,0 +1,103 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".LocationDetailsActivity"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Place name -->
+        <TextView
+            android:id="@+id/place_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Place Name"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingBottom="8dp"
+            android:fontFamily="@font/poppins_bold"/>
+
+        <!-- Image view for place photo -->
+        <ImageView
+            android:id="@+id/place_photo"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Place photo"
+            android:paddingBottom="8dp" />
+
+        <!-- Place phone number -->
+        <TextView
+            android:id="@+id/place_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phone: Not available"
+            android:fontFamily="@font/poppins_medium"
+            android:paddingBottom="8dp" />
+
+        <!-- Place rating -->
+        <TextView
+            android:id="@+id/place_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rating: Not available"
+            android:fontFamily="@font/poppins_medium"
+            android:paddingBottom="8dp" />
+
+        <!-- Place opening hours -->
+        <TextView
+            android:id="@+id/place_opening_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Opening hours: Not available"
+            android:fontFamily="@font/poppins_medium"
+            android:paddingBottom="8dp"/>
+
+        <!-- Place address -->
+        <TextView
+            android:id="@+id/place_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Place Address"
+            android:paddingBottom="8dp"
+            android:fontFamily="@font/poppins_medium"/>
+
+        <!-- Place website link -->
+        <TextView
+            android:id="@+id/place_website"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Website: Not available"
+            android:textColor="@color/theme_blue"
+            android:paddingBottom="8dp"
+            android:layout_marginTop="4dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/back_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="70dp"
+                android:backgroundTint="@color/theme_red_orange"
+                android:text="More Location"
+                tools:cornerRadius="8dp" />
+
+        </RelativeLayout>
+
+
+
+    </LinearLayout>
+
+
+
+</ScrollView>

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">DERMY</string>
+    <string name="menu_drawer_open">Drawer open</string>
+    <string name="menu_drawer_close">Drawer close</string>
+    <string name="upload">Upload</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="log_in">Log In</string>
+    <string name="detect_history">Detection History</string>
+    <string name="classify_history">Classification History</string>
+    <string name="loading">Loading...</string>
+</resources>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UpdateProfile">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@color/white">
+
+        <LinearLayout
+            android:id="@+id/update_linear_layout"
+            android:layout_width="288dp"
+            android:layout_height="57dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/button_upload_profile_pic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:backgroundTint="@color/white"
+                android:fontFamily="@font/poppins_medium"
+                android:text="Profile Image"
+                android:textAlignment="center"
+                android:textColor="@color/theme_brown"
+                android:textSize="17sp"
+                app:cornerRadius="8dp"
+                app:strokeColor="#B6BFB8"
+                app:strokeWidth="1dp" />
+            <Button
+                android:id="@+id/button_change_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/theme_brown"
+                android:fontFamily="@font/poppins_medium"
+                android:text="Password"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                app:cornerRadius="8dp" />
+
+
+        </LinearLayout>
+
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_name"
+            android:layout_below="@id/update_linear_layout"
+            android:text="Name"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_update_profile_name"
+            android:layout_below="@id/textView_update_profile_name"
+            android:inputType="textPersonName"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:hint="Enter username"
+            android:background="@drawable/border"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_dob"
+            android:layout_below="@id/editText_update_profile_name"
+            android:text="Date of Birth (dd/mm/yyyy)"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_update_profile_dob"
+            android:layout_below="@id/textView_update_profile_dob"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:clickable="false"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:hint="YYYY/MM/DD"
+            android:background="@drawable/border"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_gender"
+            android:layout_below="@id/editText_update_profile_dob"
+            android:text="Gender"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/radio_group_update_gender"
+            android:layout_below="@+id/textView_update_profile_gender"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_male"
+                android:text="Male"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:layout_weight="1"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_female"
+                android:text="Female"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:layout_weight="1"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_mobile"
+            android:layout_below="@id/radio_group_update_gender"
+            android:text="Phone"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_update_profile_mobile"
+            android:layout_below="@id/textView_update_profile_mobile"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:hint="Enter your mobile no."
+            android:background="@drawable/border"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_country"
+            android:layout_below="@+id/editText_update_profile_mobile"
+            android:text="Country"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_update_profile_country"
+            android:layout_below="@+id/textView_update_profile_country"
+            android:hint="eg. MALAYSIA"
+            android:inputType="textCapCharacters"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:background="@drawable/border"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_update_profile_state"
+            android:layout_below="@+id/editText_update_profile_country"
+            android:text="State"
+            android:layout_marginTop="20dp"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:textColor="#555555"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_update_profile_state"
+            android:layout_below="@id/textView_update_profile_state"
+            android:inputType="textCapCharacters"
+            android:padding="6dp"
+            android:textSize="16sp"
+            android:background="@drawable/border"/>
+
+
+        <Button
+            android:id="@+id/button_update_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editText_update_profile_state"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
+            android:backgroundTint="@color/theme_brown"
+            android:fontFamily="@font/poppins_medium"
+            android:text="Update Profile"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            app:cornerRadius="8dp" />
+
+    </RelativeLayout>
+    </ScrollView>
+

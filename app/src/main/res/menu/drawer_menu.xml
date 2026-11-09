@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_skin_care"
+        android:title="Skin Care" />
+    <item
+        android:id="@+id/nav_skin_clinic"
+        android:title="Skin Clinic" />
+    <item
+        android:id="@+id/nav_skin_care_clinic"
+        android:title="Skin Care Clinic" />
+    <item
+        android:id="@+id/nav_skin_lab"
+        android:title="Skin Lab" />
+    <item
+        android:id="@+id/nav_skin_specialist"
+        android:title="Skin Specialist" />
+</menu>
+
