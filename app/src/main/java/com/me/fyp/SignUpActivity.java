@@ -131,7 +131,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                                                     finish();
                                                 }else{
-                                                    Toast.makeText(SignUpActivity.this, "User registered failed. Please try again.", Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(SignUpActivity.this, "Register failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                                                 }
                                             }
                                         });

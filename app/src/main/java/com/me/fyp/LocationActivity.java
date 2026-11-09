@@ -1,6 +1,10 @@
 package com.me.fyp;
 
-
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.model.CircularBounds;
+import com.google.android.libraries.places.api.net.SearchByTextRequest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -74,7 +78,7 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
     private MaterialSearchBar materialSearchBar;
     private View mapView;
     private Button btnFind;
-    private final float DEFAULT_ZOOM = 18;
+    private final float DEFAULT_ZOOM = 14;
     private RippleBackground rippleBg;
     private ImageView placePhoto;  // Add ImageView for the photo
     private String placeId; // Variable to store placeId
@@ -108,7 +112,10 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
 
             @Override
             public void onSearchConfirmed(CharSequence text) {
-                startSearch(text.toString(), true,null,true);
+                if (mMap == null) return;
+                rippleBg.startRippleAnimation();
+                btnFind.setEnabled(false);
+                searchClinics("dermatologist " + text, mMap.getCameraPosition().target);
             }
 
             @Override
@@ -134,6 +141,7 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() < 3) return;
                 FindAutocompletePredictionsRequest predictionsRequest = FindAutocompletePredictionsRequest.builder()
                         .setCountries("MY")
                         .setSessionToken(token)
@@ -185,9 +193,10 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
             @Override
             public void OnItemClickListener(int position, View v) {
                 // Retrieve selected place
-                if(position >= predictionList.size()){
+                if (predictionList == null || position >= predictionList.size()) {
                     return;
                 }
+
                 AutocompletePrediction selectedPrediction = predictionList.get(position);
                 String suggestion = materialSearchBar.getLastSuggestions().get(position).toString();
                 materialSearchBar.setText(suggestion);
@@ -221,6 +230,9 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
                         LatLng latLngOfPlace = place.getLatLng();
                         if(latLngOfPlace != null){
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngOfPlace,DEFAULT_ZOOM));
+                            rippleBg.startRippleAnimation();
+                            btnFind.setEnabled(false);
+                            searchClinics("dermatologist skin clinic", latLngOfPlace);
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -243,39 +255,78 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
 
             }
         });
-        btnFind.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(materialSearchBar.isSuggestionsVisible()){
-                    materialSearchBar.clearSuggestions();
-                }
-                if(materialSearchBar.isSearchEnabled()){
-                    materialSearchBar.disableSearch();
-                }
-                LatLng currentMarkerLocation = mMap.getCameraPosition().target;
-                rippleBg.startRippleAnimation();
-                btnFind.setEnabled(false);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        rippleBg.stopRippleAnimation();
-                        btnFind.setEnabled(true);
-                    }
-                }, 4000);
 
-            }
+        btnFind.setOnClickListener(v -> {
+            if (materialSearchBar.isSuggestionsVisible()) materialSearchBar.clearSuggestions();
+            if (materialSearchBar.isSearchEnabled()) materialSearchBar.disableSearch();
+            if (mMap == null) return;
+
+            rippleBg.startRippleAnimation();
+            btnFind.setEnabled(false);
+            searchClinics("dermatologist skin clinic", mMap.getCameraPosition().target);
         });
-        placePhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LocationActivity.this, LocationDetailsActivity.class);
-                intent.putExtra("PLACE_ID", placeId);  // Pass placeId to LocationDetailsActivity
-                startActivity(intent);
+
+        placePhoto.setOnClickListener(v -> {
+            if(placeId == null){
+                Toast.makeText(this, "Tap Find to search for clinics.", Toast.LENGTH_SHORT).show();
+                return;
             }
+            Intent intent = new Intent (LocationActivity.this, LocationDetailsActivity.class);
+            intent.putExtra("PLACE_ID", placeId);
+            startActivity(intent);
         });
 
     }
 
+    private void searchClinics(String query, LatLng center){
+        List<Place.Field> fields = Arrays.asList(
+                Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.RATING
+        );
+
+        SearchByTextRequest request = SearchByTextRequest.builder(query, fields)
+                .setMaxResultCount(15)
+                .setLocationBias(CircularBounds.newInstance(center, 10000))
+                .build();
+
+        placesClient.searchByText(request)
+                .addOnSuccessListener(response -> {
+                    rippleBg.stopRippleAnimation();
+                    btnFind.setEnabled(true);
+                    mMap.clear();
+
+                    LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+                    int count = 0;
+                    for (Place p : response.getPlaces()){
+                        if(p.getLatLng() == null)continue;
+                        String snippet = p.getAddress() + (p.getRating() != null ? "  ★ " + p.getRating() : "");
+                        Marker m = mMap.addMarker(new MarkerOptions()
+                                .position(p.getLatLng())
+                                .title(p.getName())
+                                .snippet(snippet)
+                        );
+                        if (m != null) m.setTag(p.getId());
+                        bounds.include(p.getLatLng());
+                        count++;
+                    }
+                    
+                    if(count == 0){
+                        Toast.makeText(this, "No clinics found nearby. Move the map and try again.", Toast.LENGTH_LONG).show();
+                    }else if (count == 1){
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(bounds.build().getCenter(), 15));
+                        Toast.makeText(this, "1 clinic found. Tap the pin, then its label for details.", Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(),150));
+                        Toast.makeText(this, count + " clinics found. Tap a pin, then its label for details.", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    rippleBg.stopRippleAnimation();
+                    btnFind.setEnabled(true);
+                    Log.e("ClinicSearch", "Search failed", e);
+                    Toast.makeText(this, "Search failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
 
 
     private void showPopupMenu() {
@@ -302,6 +353,14 @@ public class LocationActivity extends BaseActivity implements OnMapReadyCallback
     //called as soon as the map is ready
     public void onMapReady(@NonNull GoogleMap googleMap) {
        mMap = googleMap;
+       mMap.setOnInfoWindowClickListener(marker -> {
+           Object id = marker.getTag();
+           if (id != null ){
+               Intent intent = new Intent(LocationActivity.this, LocationDetailsActivity.class );
+               intent.putExtra("PLACE_ID", id.toString());
+               startActivity(intent);
+           }
+       });
        mMap.setMyLocationEnabled(true);
        mMap.getUiSettings().setMyLocationButtonEnabled(true);
 

@@ -3,6 +3,8 @@ package com.me.fyp;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,12 +13,14 @@ import android.widget.TextView;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.FetchPhotoRequest;
-import com.google.android.libraries.places.api.net.FetchPhotoResponse;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.me.fyp.databinding.ActivityLocationDetailsBinding;
 
 import java.util.Arrays;
+
+import android.net.Uri;
+import com.bumptech.glide.Glide;
+import com.google.android.libraries.places.api.net.FetchResolvedPhotoUriRequest;
 
 public class LocationDetailsActivity extends BaseActivity {
 
@@ -31,13 +35,7 @@ public class LocationDetailsActivity extends BaseActivity {
 
         back_button = findViewById(R.id.back_button);
 
-        back_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LocationDetailsActivity.this, LocationActivity.class);
-                startActivity(intent);
-            }
-        });
+        back_button.setOnClickListener(v -> finish());
 
         String placeId = getIntent().getStringExtra("PLACE_ID");
         fetchPlaceDetails(placeId);
@@ -82,20 +80,29 @@ public class LocationDetailsActivity extends BaseActivity {
             }
 
             if (place.getOpeningHours() != null) {
-                placeOpeningHours.setText("Opening hours: " + place.getOpeningHours().getWeekdayText());
+                placeOpeningHours.setText("Opening hours:\n" + TextUtils.join("\n", place.getOpeningHours().getWeekdayText()));
             } else {
                 placeOpeningHours.setText("Opening hours: Not available");
             }
 
-            // Fetch and display the place's photo if available
+            // Fetch and display the place's photo if available (Places API New)
             if (place.getPhotoMetadatas() != null && !place.getPhotoMetadatas().isEmpty()) {
                 PhotoMetadata photoMetadata = place.getPhotoMetadatas().get(0);
-                FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(photoMetadata).build();
+                FetchResolvedPhotoUriRequest photoRequest = FetchResolvedPhotoUriRequest.builder(photoMetadata)
+                        .setMaxWidth(800)
+                        .setMaxHeight(600)
+                        .build();
 
-                Places.createClient(this).fetchPhoto(photoRequest).addOnSuccessListener((FetchPhotoResponse photoResponse) -> {
-                    Bitmap bitmap = photoResponse.getBitmap();
-                    placePhoto.setImageBitmap(bitmap);
-                });
+                Places.createClient(this).fetchResolvedPhotoUri(photoRequest)
+                        .addOnSuccessListener(r -> {
+                            Uri uri = r.getUri();
+                            if (uri != null) {
+                                Glide.with(this).load(uri).into(placePhoto);
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.e("PlacePhoto", "Photo failed: " + e.getMessage(), e));
+            } else {
+                Log.d("PlacePhoto", "No photos for this place");
             }
         });
     }

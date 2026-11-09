@@ -67,11 +67,13 @@ class Detector(
         }
     }
 
+    @Synchronized
     fun clear() {
         interpreter?.close()
         interpreter = null
     }
 
+    @Synchronized
     fun detect(frame: Bitmap) {
         interpreter ?: return
         if (tensorWidth == 0) return
@@ -124,27 +126,30 @@ class Detector(
 
             if (maxConf > CONFIDENCE_THRESHOLD) {
                 val clsName = labels[maxIdx]
-                val percentage = maxConf*100
+                val percentage = maxConf * 100
                 val cx = array[c] // 0
                 val cy = array[c + numElements] // 1
                 val w = array[c + numElements * 2]
                 val h = array[c + numElements * 3]
-                val x1 = cx - (w/2F)
-                val y1 = cy - (h/2F)
-                val x2 = cx + (w/2F)
-                val y2 = cy + (h/2F)
-                if (x1 < 0F || x1 > 1F) continue
-                if (y1 < 0F || y1 > 1F) continue
-                if (x2 < 0F || x2 > 1F) continue
-                if (y2 < 0F || y2 > 1F) continue
+                val x1 = cx - (w / 2F)
+                val y1 = cy - (h / 2F)
+                val x2 = cx + (w / 2F)
+                val y2 = cy + (h / 2F)
+
+                // Clamp to the image instead of discarding boxes that slightly overshoot
+                val bx1 = x1.coerceIn(0F, 1F)
+                val by1 = y1.coerceIn(0F, 1F)
+                val bx2 = x2.coerceIn(0F, 1F)
+                val by2 = y2.coerceIn(0F, 1F)
+                if (bx2 - bx1 < 0.05F || by2 - by1 < 0.05F) continue
 
                 boundingBoxes.add(
-                        BoundingBox(
-                                x1 = x1, y1 = y1, x2 = x2, y2 = y2,
-                                cx = cx, cy = cy, w = w, h = h,
-                                cnf = maxConf, cls = maxIdx, clsName = clsName,
-                                percentage = percentage
-                        )
+                    BoundingBox(
+                        x1 = bx1, y1 = by1, x2 = bx2, y2 = by2,
+                        cx = cx, cy = cy, w = bx2 - bx1, h = by2 - by1,
+                        cnf = maxConf, cls = maxIdx, clsName = clsName,
+                        percentage = percentage
+                    )
                 )
             }
         }
@@ -197,7 +202,7 @@ class Detector(
         private const val INPUT_STANDARD_DEVIATION = 255f
         private val INPUT_IMAGE_TYPE = DataType.FLOAT32
         private val OUTPUT_IMAGE_TYPE = DataType.FLOAT32
-        private const val CONFIDENCE_THRESHOLD = 0.3F
+        private const val CONFIDENCE_THRESHOLD = 0.5F
         private const val IOU_THRESHOLD = 0.5F
     }
 }

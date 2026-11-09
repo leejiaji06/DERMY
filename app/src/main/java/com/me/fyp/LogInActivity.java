@@ -216,12 +216,19 @@ public class LogInActivity extends AppCompatActivity {
 
         // Check if the user has just signed up
         boolean justSignedUp = getIntent().getBooleanExtra("justSignedUp", false);
+        FirebaseUser user = authProfile.getCurrentUser();
 
-        if(authProfile.getCurrentUser() != null && !justSignedUp) {
-            Toast.makeText(this,"Welcome back!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, DashboardActivity.class));
-            finish();
+        if (user != null && !justSignedUp) {
+            user.reload().addOnCompleteListener(task -> {
+                if (user.isEmailVerified()) {
+                    Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, DashboardActivity.class));
+                    finish();
+                }
+            });
         }
+
+
     }
 
 }
