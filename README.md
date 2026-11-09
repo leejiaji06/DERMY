@@ -61,7 +61,7 @@ The two models work as a simple hierarchy: the screening model gives a quick ben
 
 | Dataset | Use | Notes |
 |---|---|---|
-| [ISIC 2019](https://challenge.isic-archive.com/data/#2019) | Training and internal testing | Dermoscopic images, 8 diagnostic classes |
+| [ISIC 2019](https://challenge.isic-archive.com/data/#2019) | Training and internal validation | Dermoscopic images, 8 diagnostic classes |
 | [Derm-T2IM](https://huggingface.co/datasets/MAli-Farooq/Derm-T2IM-Dataset) | Synthetic augmentation for the screening model | Text-to-image generated benign/malignant images |
 | [PAD-UFES-20](https://data.mendeley.com/datasets/zr7vgbcyr2/1) | External validation | Smartphone clinical images, 6 of the 8 classes |
 
@@ -71,25 +71,30 @@ Datasets are not included in this repository. Please download them from the orig
 
 ## Results and limitations
 
-| Model | Internal test (ISIC 2019) mAP50 | External test (PAD-UFES-20) mAP50 |
+| Model | Internal validation (ISIC 2019) mAP50 | External (PAD-UFES-20, 2,298 images) mAP50 |
 |---|---|---|
 | Screening, ISIC only | 0.96 | 0.414 |
 | Screening, ISIC + synthetic | 0.99 | 0.429 |
 | 8-class classification | 0.794 | 0.226 |
 
-**These internal scores are inflated and should not be read as real-world accuracy.** Revisiting the project, I found three issues:
+**These internal scores are inflated and should not be read as real-world accuracy.** Revisiting the project, I found five issues:
 
-1. **Whole-image bounding boxes.** Every training box covered the entire image, so the "detector" effectively acts as a classifier. This is why mAP50 and mAP50-95 are identical.
-2. **Data leakage.** Images were augmented before the train/validation/test split, and the split was done at image level rather than lesion level, so variants of the same lesion could appear in both training and test sets.
-3. **Domain shift.** ISIC contains dermoscopic images, while PAD-UFES-20 and real phone use involve ordinary smartphone photos. The large drop on PAD-UFES-20 reflects this gap.
+1. **No held-out test set.** The internal scores were measured on the validation split, the same data used to choose the best checkpoint.
+2. **Whole-image bounding boxes.** Every training box covered the entire image, so the "detector" effectively acts as a classifier. This is why mAP50 and mAP50-95 are identical.
+3. **Data leakage.** Images were augmented before splitting, and the split was done at image level rather than lesion level, so variants of the same lesion could appear on both sides of the split. The validation set for the hybrid model also contained synthetic images.
+4. **Trained from scratch.** The models were initialised from the YOLOv8m config rather than ImageNet-pretrained weights, which hurts generalisation on a dataset of this size.
+5. **Domain shift.** ISIC contains dermoscopic images, while PAD-UFES-20 and real phone use involve ordinary smartphone photos.
+
+**What the external result actually means:** on PAD-UFES-20, the screening model caught 99.6% of malignant lesions but recognised only 6% of benign ones, and its malignant precision (0.474) equals the share of malignant images in the set. On phone photos, it flags almost everything as malignant: very high sensitivity, almost no specificity.
 
 Synthetic data improved the external score by only about 1.5 points, a much smaller gain than the internal results suggested.
 
 ### Planned improvements
 
-- Retrain the screening model as a classifier (YOLOv8-cls) with a **lesion- or patient-level split** and augmentation applied only to the training set
+- Retrain the screening model as a classifier (YOLOv8-cls) **from pretrained weights**, with a **lesion- or patient-level split**, a **separate held-out test set**, and augmentation applied only to the training set
 - Fine-tune on smartphone images (PAD-UFES-20) and evaluate on a held-out set
 - Report **sensitivity, specificity and a confusion matrix**, with particular attention to melanoma recall
+- Quantise the TFLite model (currently float32, about 99 MB) to float16 or int8 for faster on-device inference
 - Retrain the 8-class model with real lesion bounding boxes
 - Move Gemini calls behind Firebase AI Logic and add App Check, so no API key ships in the APK
 
