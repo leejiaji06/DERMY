@@ -56,6 +56,15 @@ import coil.size.Size
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.alpha
+
 
 class InformationActivity: ComponentActivity() {
 
@@ -128,6 +137,9 @@ class InformationActivity: ComponentActivity() {
                             .padding(horizontal = 8.dp),
                     reverseLayout = true
             ) {
+                if (chatState.isLoading) {
+                    item { TypingIndicatorItem() }
+                }
                 itemsIndexed(chatState.chatList) { index, chat ->
                     if (chat.isFromUser) {
                         UserChatItem(
@@ -263,14 +275,47 @@ class InformationActivity: ComponentActivity() {
     }
 
     @Composable
+    fun TypingIndicatorItem() {
+        val transition = rememberInfiniteTransition()
+        val phase by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 3f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 900, easing = LinearEasing)
+            )
+        )
+
+        Row(
+            modifier = Modifier
+                .padding(end = 100.dp, bottom = 16.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFDEA057))
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(3) { i ->
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .alpha(if (phase.toInt() == i) 1f else 0.35f)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onPrimary)
+                )
+            }
+        }
+    }
+
+    @Composable
     private fun getBitmap(): Bitmap? {
         val uri = uriState.collectAsState().value
 
         val imageState: AsyncImagePainter.State = rememberAsyncImagePainter(
-                model = ImageRequest.Builder(LocalContext.current)
-                        .data(uri)
-                        .size(Size.ORIGINAL)
-                        .build()
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(uri)
+                .size(1024)              // longest side max 1024 px
+                .allowHardware(false)    // readable bitmap for Gemini
+                .build()
         ).state
 
         if (imageState is AsyncImagePainter.State.Success) {

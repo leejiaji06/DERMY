@@ -16,7 +16,7 @@ class ChatViewModel: ViewModel() {
     fun onEvent(event: ChatUiEvent){
         when(event){
             is ChatUiEvent.SendPrompt->{
-                if(event.prompt.isNotEmpty()){
+                if(event.prompt.isNotEmpty() && !_chatState.value.isLoading || event.bitmap != null){
                     addPrompt(event.prompt,event.bitmap)
 
                     if(event.bitmap != null){
@@ -41,7 +41,8 @@ class ChatViewModel: ViewModel() {
                         add(0,Chat(prompt,bitmap,true))
                     },
                     prompt = "",
-                    bitmap = null
+                    bitmap = null,
+                    isLoading = true
             )
         }
     }
@@ -53,7 +54,8 @@ class ChatViewModel: ViewModel() {
                 it.copy(
                         chatList = it.chatList.toMutableStateList().apply {
                             add(0,chat)
-                        }
+                        },
+                        isLoading = false
                 )
             }
         }
@@ -66,7 +68,8 @@ class ChatViewModel: ViewModel() {
                 it.copy(
                         chatList = it.chatList.toMutableList().apply {
                             add(0,chat)
-                        }
+                        },
+                        isLoading = false
                 )
             }
         }
