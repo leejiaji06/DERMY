@@ -42,6 +42,8 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+import android.view.Surface
+
 class DetectionActivity : BaseActivity(), Detector.DetectorListener {
     //TODO add progress dialog and check whether base activity successfully implemented
     private lateinit var binding: ActivityDetectionBinding
@@ -291,6 +293,7 @@ class DetectionActivity : BaseActivity(), Detector.DetectorListener {
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
+            if (isFinishing || isDestroyed) return@addListener
             cameraProvider  = cameraProviderFuture.get()
             bindCameraUseCases()
         }, ContextCompat.getMainExecutor(this))
@@ -299,60 +302,59 @@ class DetectionActivity : BaseActivity(), Detector.DetectorListener {
     private fun bindCameraUseCases() {
         val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
 
-        val rotation = binding.viewFinder.display.rotation
+        val rotation = binding.viewFinder.display?.rotation ?: Surface.ROTATION_0
 
         val cameraSelector = CameraSelector
-                .Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build()
+            .Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
 
         // ImageCapture use case
         imageCapture = ImageCapture.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(rotation)
-                .build()
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(rotation)
+            .build()
 
         preview =  Preview.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(rotation)
-                .build()
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(rotation)
+            .build()
 
         imageAnalyzer = ImageAnalysis.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setTargetRotation(binding.viewFinder.display.rotation)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build()
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .setTargetRotation(rotation)
+            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+            .build()
 
         imageAnalyzer?.setAnalyzer(cameraExecutor) { imageProxy ->
-            val bitmapBuffer =
-                    Bitmap.createBitmap(
-                            imageProxy.width,
-                            imageProxy.height,
-                            Bitmap.Config.ARGB_8888
-                    )
-            imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-            imageProxy.close()
+            try {
+                val bitmapBuffer = imageProxy.toBitmap()
 
-            val matrix = Matrix().apply {
-                postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+                val matrix = Matrix().apply {
+                    postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
 
-                if (isFrontCamera) {
-                    postScale(
+                    if (isFrontCamera) {
+                        postScale(
                             -1f,
                             1f,
                             imageProxy.width.toFloat(),
                             imageProxy.height.toFloat()
-                    )
+                        )
+                    }
                 }
-            }
 
-            val rotatedBitmap = Bitmap.createBitmap(
+                val rotatedBitmap = Bitmap.createBitmap(
                     bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
                     matrix, true
-            )
+                )
 
-            detector.detect(rotatedBitmap)
+                detector.detect(rotatedBitmap)
+            } catch (e: Throwable) {
+                Log.w(TAG, "Skipped a camera frame", e)
+            } finally {
+                imageProxy.close()
+            }
         }
 
         cameraProvider.unbindAll()
