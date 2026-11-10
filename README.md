@@ -112,7 +112,7 @@ Synthetic data improved the external score by only about 1.5 points, a much smal
 
 1. Clone the repository:
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/leejiaji06/DERMY.git
    ```
 2. Add your keys to `local.properties` in the project root (this file is git-ignored):
    ```properties
